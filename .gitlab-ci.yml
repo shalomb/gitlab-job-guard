@@ -54,18 +54,18 @@ before_script:
   script:
     - ( set +e; guard.py -c='.+' -s='.+' -w 60; [ $? = 11 ] )
 
-'test-py3-retry-success-until-timeout':
+'test-py3-retry-failed-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='success|skipped' -w 60; [ $? = 11 ] )
+    - ( set +e; guard.py -c='.+' -s='failed|skipped' -w 60; [ $? = 11 ] )
 
-'test-py3-retry-feature-success-until-timeout':
+'test-py3-retry-feature-failed-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
     - ( set +e;
-        guard.py -c='feature/' -s='success|skipped' -w 60;
+        guard.py -c='feature/' -s='failed|skipped' -w 60;
         [ $? = 11 ]
       )
 
