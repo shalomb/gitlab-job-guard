@@ -34,19 +34,13 @@ before_script:
   script:
     - python ./setup.py sdist bdist_wheel
     - pip install dist/gitlab-job-guard*.tar.gz
-    - ( set +e;
-        python2 $(which guard.py) -c='feature/' -s 'running' -w 60;
-        [ $? = 11 ]
-      )
+    - python2 $(which guard.py) -c='feature/' -s 'running' -w 60;
 
 'test-python3':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e;
-        python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
-        [ $? = 11 ]
-      )
+    - python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
 
 'build-package':
   stage: build
