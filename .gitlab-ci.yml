@@ -1,6 +1,6 @@
 ---
 
-image: python:3.7-stretch
+image: python:3.7-slim-stretch
 
 stages:
   - build
@@ -11,6 +11,7 @@ variables:
 
 before_script:
   - env | sort | egrep -i 'CI|GIT'
+  - pwd; pwd -P
   - python -m pip install --upgrade setuptools wheel twine
   - awk -F"'" '
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
