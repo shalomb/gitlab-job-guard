@@ -13,15 +13,20 @@ variables:
 before_script:
   - env | sort | egrep -i 'CI|GIT'
   - pwd; pwd -P
-  - python -m pip install --upgrade setuptools wheel twine
+  - python -m pip install --upgrade pip virtualenv
+  - virtualenv -p python venv
+  - . venv/bin/activate
+  - python -m pip install --upgrade pip setuptools virtualenv wheel
+  - echo '.' > requirements.txt
   - pip install -e ./
-  - pip freeze > requirements.txt
+  - pip freeze -l --exclude-editable > requirements.txt
   - awk -F"'" '
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
     ' setup.py > setup.py.tmp; mv -v setup.py.tmp setup.py
   - chmod +x ./setup.py
   - ./setup.py sdist bdist_wheel
   - find */ -type f -ls -a -exec sha256sum {} +
+  - pip install dist/gitlab-job-guard*.tar.gz
 
 'build-package':
   stage: build
@@ -37,7 +42,7 @@ before_script:
     - python2 $(which guard.py)
       -c='feature/' -s 'failed'
       -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-      -p 123123 -i 54982176 -w 20; [ $? = 11 ]
+      -p 123123 -i 54982176 -w 20 -w 10; [ $? = 11 ]
 
 'test-python3':
   stage: test
@@ -46,7 +51,7 @@ before_script:
     - python3 $(which guard.py)
       -c='feature/' -s 'failed'
       -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-      -p 123123 -i 54982176 -w 20; [ $? = 11 ]
+      -p 123123 -i 54982176 -w 20 -w 10; [ $? = 11 ]
 
 'deploy-package':
   stage: deploy
@@ -56,6 +61,7 @@ before_script:
   script:
     - echo "Deploying package to artifactory"
     - echo "Deploying $package@$CI_COMMIT_REF_NAME to $af_repo_url as $af_username ..."
+    - python -m pip install --upgrade twine
     - cat setup.py
     - twine upload
         --repository-url "$af_url"
