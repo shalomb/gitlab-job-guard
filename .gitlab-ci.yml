@@ -42,23 +42,72 @@ before_script:
   script:
     - python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
 
+'test-py3-exit-immediately':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e; guard.py -c='.+' -s='.+' -x; [ $? = 7 ] )
+
 'test-py3-retry-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='.+' -w 20; [ $? = 11 ] )
+    - ( set +e; guard.py -c='.+' -s='.+' -w 60; [ $? = 11 ] )
 
 'test-py3-retry-success-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='success|skipped' -w 20; [ $? = 11 ] )
+    - ( set +e; guard.py -c='.+' -s='success|skipped' -w 60; [ $? = 11 ] )
 
 'test-py3-retry-feature-success-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='feature/' -s='success|skipped' -w 20; [ $? = 11 ] )
+    - ( set +e;
+        guard.py -c='feature/' -s='success|skipped' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-unreachable-api-endpoint':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_API_V4_URL='https://gitlab.local/api/v4/'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-api-url':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_API_V4_URL="$CI_API_V4_URL/blah-blah-blah"
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-project-id':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_PROJECT_ID='123123123'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-token':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        PRIVATE_TOKEN='abracadabra'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
 
 'build-package':
   stage: build
