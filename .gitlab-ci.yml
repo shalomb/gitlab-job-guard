@@ -3,8 +3,8 @@
 image: python:3.7-slim-stretch
 
 stages:
-  - build
   - test
+  - build
   - deploy
 
 variables:
@@ -27,32 +27,38 @@ before_script:
   - python ./setup.py sdist bdist_wheel
   - pip install dist/gitlab-job-guard*.tar.gz
 
-'build-package':
-  stage: build
-  script:
-    - echo "Built $package@$CI_COMMIT_REF_NAME ... "
-  except:
-    - tags
-
 'test-python2':
   stage: test
   image: python:2.7-slim-stretch
   script:
     - python ./setup.py sdist bdist_wheel
     - pip install dist/gitlab-job-guard*.tar.gz
-    - python2 $(which guard.py)
-      -c='feature/' -s 'failed'
-      -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-      -p 123123 -i 54982176 -w 20 -w 10; [ $? = 11 ]
+    - ( set +e;
+        python2 $(which guard.py)
+          -c='feature/' -s 'failed'
+          -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
+          -p 123123 -i 54982176 -w 20 -w 10;
+        [ $? = 11 ]
+      )
 
 'test-python3':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - python3 $(which guard.py)
-      -c='feature/' -s 'failed'
-      -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-      -p 123123 -i 54982176 -w 20 -w 10; [ $? = 11 ]
+    - ( set +e;
+        python2 $(which guard.py)
+          -c='feature/' -s 'failed'
+          -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
+          -p 123123 -i 54982176 -w 20 -w 10;
+        [ $? = 11 ]
+      )
+
+'build-package':
+  stage: build
+  script:
+    - echo "Built $package@$CI_COMMIT_REF_NAME ... "
+  except:
+    - tags
 
 'deploy-package':
   stage: deploy
