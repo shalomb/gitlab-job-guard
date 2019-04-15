@@ -13,10 +13,12 @@ before_script:
   - env | sort | egrep -i 'CI|GIT'
   - pwd; pwd -P
   - python -m pip install --upgrade setuptools wheel twine
+  - pip install -e ./
+  - pip freeze > requirements.txt
   - awk -F"'" '
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
     ' setup.py > setup.py.tmp; mv -v setup.py.tmp setup.py
-  - python setup.py sdist bdist_wheel
+  - ./setup.py sdist bdist_wheel
   - find */ -type f -ls -a -exec sha256sum {} +
 
 'build-package':

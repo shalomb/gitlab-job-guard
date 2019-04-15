@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-# guard.py - guard pipeline jobs from multiple simultaneous executions
-
 # -*- coding: utf-8 -*-
+
+# guard.py - guard pipeline jobs from multiple simultaneous executions
 
 from __future__ import absolute_import, division, print_function
 
@@ -71,7 +71,6 @@ def get_pipeline_runs(project_api_url, private_token):
     '''
 
     url = urljoin(project_api_url, 'pipelines')
-    url = 'http://localhost/v4'
     headers = { 'PRIVATE-TOKEN': private_token,
                 'Accept':        'application/json' }
 
