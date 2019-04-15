@@ -24,8 +24,7 @@ before_script:
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
     ' setup.py > setup.py.tmp; mv -v setup.py.tmp setup.py
   - chmod +x ./setup.py
-  - ./setup.py sdist bdist_wheel
-  - find */ -type f -ls -a -exec sha256sum {} +
+  - python ./setup.py sdist bdist_wheel
   - pip install dist/gitlab-job-guard*.tar.gz
 
 'build-package':
@@ -39,6 +38,8 @@ before_script:
   stage: test
   image: python:2.7-slim-stretch
   script:
+    - python ./setup.py sdist bdist_wheel
+    - pip install dist/gitlab-job-guard*.tar.gz
     - python2 $(which guard.py)
       -c='feature/' -s 'failed'
       -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
