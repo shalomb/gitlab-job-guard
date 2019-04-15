@@ -4,6 +4,7 @@ image: python:3.7-slim-stretch
 
 stages:
   - build
+  - test
   - deploy
 
 variables:
@@ -28,6 +29,24 @@ before_script:
     - echo "Built $package@$CI_COMMIT_REF_NAME ... "
   except:
     - tags
+
+'test-python2':
+  stage: test
+  image: python:2.7-slim-stretch
+  script:
+    - python2 $(which guard.py)
+      -c='feature/' -s 'failed'
+      -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
+      -p 123123 -i 54982176 -w 20; [ $? = 11 ]
+
+'test-python3':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - python3 $(which guard.py)
+      -c='feature/' -s 'failed'
+      -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
+      -p 123123 -i 54982176 -w 20; [ $? = 11 ]
 
 'deploy-package':
   stage: deploy
