@@ -261,7 +261,7 @@ def main():
             conflicts = [ p for p in runs if
                             re.search( args.guard_ref_regex,    p.ref    ) and
                             re.match(  args.guard_status_regex, p.status ) and
-                            p.id != args.ci_pipeline_id ]
+                            int(p.id) != int(args.ci_pipeline_id) ]
 
         except Exception as e:
             log.error('{}("{}")'.format(e.__class__.__name__, str(e)))
