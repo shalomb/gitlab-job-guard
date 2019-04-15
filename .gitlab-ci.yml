@@ -11,7 +11,8 @@ variables:
   package: gitlab-job-guard
 
 before_script:
-  - env | sort | egrep -i 'CI|GIT'
+  - env | sort | egrep -i 'CI|GIT' |
+    perl -pe 's/((?:PASSWORD|TOKEN)=)(.*)/$1 . q[X] x length($2)/e'
   - pwd; pwd -P
   - python -m pip install --upgrade pip virtualenv
   - virtualenv -p python venv
@@ -34,10 +35,7 @@ before_script:
     - python ./setup.py sdist bdist_wheel
     - pip install dist/gitlab-job-guard*.tar.gz
     - ( set +e;
-        python2 $(which guard.py)
-          -c='feature/' -s 'failed'
-          -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-          -p 123123 -i 54982176 -w 20 -w 10;
+        python2 $(which guard.py) -c='feature/' -s 'running' -w 60;
         [ $? = 11 ]
       )
 
@@ -46,10 +44,7 @@ before_script:
   image: python:3.7-slim-stretch
   script:
     - ( set +e;
-        python2 $(which guard.py)
-          -c='feature/' -s 'failed'
-          -u 'https://gitlab.local/api/v4' -t 'dummy-api-key'
-          -p 123123 -i 54982176 -w 20 -w 10;
+        python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
         [ $? = 11 ]
       )
 
