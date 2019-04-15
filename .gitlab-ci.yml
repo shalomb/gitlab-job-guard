@@ -18,6 +18,7 @@ before_script:
   - awk -F"'" '
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
     ' setup.py > setup.py.tmp; mv -v setup.py.tmp setup.py
+  - chmod +x ./setup.py
   - ./setup.py sdist bdist_wheel
   - find */ -type f -ls -a -exec sha256sum {} +
 
