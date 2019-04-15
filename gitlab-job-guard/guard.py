@@ -15,6 +15,7 @@ except ImportError:
   import simplejson as json
 import logging
 from os        import environ, path
+from os.path   import basename
 from posixpath import join as urljoin
 from random    import randint, random
 import re
@@ -87,7 +88,7 @@ def setup_logger(*args, **kwargs):
     '''
     Setup and return the root logger ojbect for the application
     '''
-    root = logging.getLogger(__file__)
+    root = logging.getLogger(basename(__file__))
     root.setLevel(logging.DEBUG)
 
     handler = logging.StreamHandler(sys.stdout)
