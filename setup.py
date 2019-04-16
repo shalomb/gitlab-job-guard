@@ -26,6 +26,6 @@ setup(  name='gitlab-job-guard',
         scripts=['gitlab-job-guard/guard.py'],
         install_requires=requirements,
         keywords='gitlab-ci pipeline job guard',
-        python_requires='>=2.7, >=3.5, !=3.0, !=3.0.*, !=3.1, !=3.1.*, !=3.2, !=3.2.*, !=3.3, !=3.3.*, !=3.4, !=3.4.*',
+        python_requires='>=2.7, >=2.7.1, !=3.0, !=3.0.*, !=3.1, !=3.1.*, !=3.2, !=3.2.*, !=3.3, !=3.3.*, !=3.4, !=3.4.*',
     )
 
