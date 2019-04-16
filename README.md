@@ -24,7 +24,7 @@ time).
 `gitlab-job-guard` uses the Gitlab API to determine if existing pipelines are
 scheduled and to backoff-and-retry  until it is safe to proceed. Conflicts
 are detected  by user-defined matches on  pipeline ref names (branch,  tag, etc)
-and/or status.
+and/or pipeline status.
 
 ## Usage
 
@@ -51,25 +51,25 @@ deploy-production:
 To hold jobs for a collisions on pattern matches in the ref/branch name.
 
 ```bash
-gitlab-job-guard -c=^master$   # Match branch names matching master exactly.
+gitlab-job-guard -c=^master$                # Match branch names matching 'master' exactly.
 
-gitlab-job-guard -c=^(master|dev(elop)?)$   # Match any mainline branches
+gitlab-job-guard -c=^(master|dev(elop)?)$   # Match any of the mainline branches
 
-gitlab-job-guard -c=^[0-9]\-   # Match branch names beginning with a number and dash
-                                  # ignoring all other text.
-                                  # e.g. a gitlab branch made from an issue.
+gitlab-job-guard -c=^[0-9]\-                # Match branch names beginning with a number
+                                            # and dash ignoring all other text.
+                                            # e.g. a gitlab branch made from an issue.
 
-gitlab-job-guard -c=^v[\d.]+$               # Match (semver) tags
+gitlab-job-guard -c=^v?[\d.]+$              # Match (semver) tags like v1.0.9, 2.0
 
 gitlab-job-guard -c=^environment/           # Match any environment deployments?
 
-gitlab-job-guard -c=^environment/dc1.+      # Match deployments to DC1?
+gitlab-job-guard -c=^environment/dc1.+      # Match environment deployments to DC1?
 
 gitlab-job-guard -c="$CI_BUILD_REF_NAME"    # Match current branch name (partially).
-                                               # e.g. 'master' matches 'feature/master-document'
+                                            # i.e. 'master' matches 'feature/master-document'
 
 gitlab-job-guard -c="^$CI_BUILD_REF_NAME$"  # Match current branch name (exactly).
-                                               # e.g. 'master' does not match 'master-deployment'
+                                            # i.e. 'master' does not match 'master-deployment'
 
 ```
 
@@ -96,3 +96,4 @@ if often not desired and newer pipelines always winning is probably desired.
 * Narrow down conflicts to jobs (`CI_JOB_NAME`) or stages (`CI_JOB_STAGE`)
   so that other parts of the pipelines that do not share state are allowed to
   run freely.
+
