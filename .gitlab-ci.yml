@@ -11,7 +11,7 @@ variables:
   package: gitlab-job-guard
 
 before_script:
-  - env | sort | egrep -i 'CI|GIT' |
+  - env | sort |
     perl -pe 's/((?:PASSWORD|TOKEN)=)(.*)/$1 . q[X] x length($2)/e'
   - pwd; pwd -P
   - python -m pip install --upgrade pip virtualenv
