@@ -22,9 +22,9 @@ means  environments  can  easily  be  left  in  an  unsafe/broken  state.  (e.g.
 time).
 
 `gitlab-job-guard.py` uses the Gitlab API to determine if existing pipelines are
-scheduled and  to pause-and-retry  until it  is safe  to proceed.  Conflicts are
-detected by user-defined matches on pipeline ref names (branch, tag, etc) and/or
-status.
+scheduled and to backoff-and-retry  until it is safe to proceed. Conflicts
+are detected  by user-defined matches on  pipeline ref names (branch,  tag, etc)
+and/or status.
 
 ## Usage
 
@@ -85,3 +85,14 @@ CI_BUILD_REF_PREFIX=$(echo "$CI_BUILD_REF_NAME" | sed -r 's@(.+/)(.+)@\1@')
 gitlab-job-guard.py -c="^$CI_BUILD_REF_PREFIX" -s='running|pending'
 ```
 
+# TODO
+
+For long pipelines, this solution can have subtle consequences with growing
+queues and increased contention and unpredictability as to which pipeline is
+the first-past-the-post. An older pipeline taking precedence over newer commits
+if often not desired and newer pipelines always winning is probably desired.
+
+* Handle existing conflicting pipelines - cancel them or give-way.
+* Narrow down conflicts to jobs (`CI_JOB_NAME`) or stages (`CI_JOB_STAGE`)
+  so that other parts of the pipelines that do not share state are allowed to
+  run freely.
