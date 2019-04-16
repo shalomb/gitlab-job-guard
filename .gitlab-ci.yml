@@ -3,6 +3,7 @@
 image: python:3.7-slim-stretch
 
 stages:
+  - test
   - build
   - deploy
 
@@ -10,17 +11,103 @@ variables:
   package: gitlab-job-guard
 
 before_script:
-  - env | sort | egrep -i 'CI|GIT'
+  - env | sort | egrep -i 'CI|GIT' |
+    perl -pe 's/((?:PASSWORD|TOKEN)=)(.*)/$1 . q[X] x length($2)/e'
   - pwd; pwd -P
-  - python -m pip install --upgrade setuptools wheel twine
+  - python -m pip install --upgrade pip virtualenv
+  - virtualenv -p python venv
+  - . venv/bin/activate
+  - python -m pip install --upgrade pip setuptools virtualenv wheel
+  - echo '.' > requirements.txt
   - pip install -e ./
-  - pip freeze > requirements.txt
+  - pip freeze -l --exclude-editable > requirements.txt
   - awk -F"'" '
       /version/ { $0=$1"'"'"$CI_COMMIT_REF_NAME"'"'"$3 }{ print $0 }
     ' setup.py > setup.py.tmp; mv -v setup.py.tmp setup.py
   - chmod +x ./setup.py
-  - ./setup.py sdist bdist_wheel
-  - find */ -type f -ls -a -exec sha256sum {} +
+  - python ./setup.py sdist bdist_wheel
+  - pip install dist/gitlab-job-guard*.tar.gz
+
+'test-py2':
+  stage: test
+  image: python:2.7-slim-stretch
+  script:
+    - python ./setup.py sdist bdist_wheel
+    - pip install dist/gitlab-job-guard*.tar.gz
+    - python2 $(which guard.py) -c='feature/' -s 'running' -w 60;
+
+'test-py3':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
+
+'test-py3-exit-immediately':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e; guard.py -c='.+' -s='.+' -x; [ $? = 7 ] )
+
+'test-py3-retry-until-timeout':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e; guard.py -c='.+' -s='.+' -w 60; [ $? = 11 ] )
+
+'test-py3-retry-failed-until-timeout':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e; guard.py -c='.+' -s='failed|skipped' -w 60; [ $? = 11 ] )
+
+'test-py3-retry-feature-failed-until-timeout':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        guard.py -c='feature/' -s='failed|skipped' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-unreachable-api-endpoint':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_API_V4_URL='https://gitlab.local/api/v4/'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-api-url':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_API_V4_URL="$CI_API_V4_URL/blah-blah-blah"
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-project-id':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        CI_PROJECT_ID='123123123'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
+
+'test-py3-invalid-token':
+  stage: test
+  image: python:3.7-slim-stretch
+  script:
+    - ( set +e;
+        PRIVATE_TOKEN='abracadabra'
+        guard.py -c='.+' -s='.+' -w 60;
+        [ $? = 11 ]
+      )
 
 'build-package':
   stage: build
@@ -37,6 +124,7 @@ before_script:
   script:
     - echo "Deploying package to artifactory"
     - echo "Deploying $package@$CI_COMMIT_REF_NAME to $af_repo_url as $af_username ..."
+    - python -m pip install --upgrade twine
     - cat setup.py
     - twine upload
         --repository-url "$af_url"

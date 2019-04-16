@@ -15,6 +15,7 @@ except ImportError:
   import simplejson as json
 import logging
 from os        import environ, path
+from os.path   import basename
 from posixpath import join as urljoin
 from random    import randint, random
 import re
@@ -87,7 +88,7 @@ def setup_logger(*args, **kwargs):
     '''
     Setup and return the root logger ojbect for the application
     '''
-    root = logging.getLogger(__file__)
+    root = logging.getLogger(basename(__file__))
     root.setLevel(logging.DEBUG)
 
     handler = logging.StreamHandler(sys.stdout)
@@ -261,7 +262,7 @@ def main():
             conflicts = [ p for p in runs if
                             re.search( args.guard_ref_regex,    p.ref    ) and
                             re.match(  args.guard_status_regex, p.status ) and
-                            p.id != args.ci_pipeline_id ]
+                            int(p.id) != int(args.ci_pipeline_id) ]
 
         except Exception as e:
             log.error('{}("{}")'.format(e.__class__.__name__, str(e)))
