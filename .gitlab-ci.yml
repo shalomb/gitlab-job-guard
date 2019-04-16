@@ -129,6 +129,7 @@ before_script:
     - echo "Deploying $package@$CI_COMMIT_REF_NAME to $af_repo_url as $af_username ..."
     - python -m pip install --upgrade twine
     - cat setup.py
+    - twine check dist/*
     - twine upload
         --repository-url "$af_url"
         --username       "$af_user"
