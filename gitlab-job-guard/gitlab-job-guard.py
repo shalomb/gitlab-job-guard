@@ -105,6 +105,13 @@ def setup_logger(*args, **kwargs):
 def print_unbuffered(*args, **kwargs):
     '''
     Workaround for python3 where stderr is buffered. WTH python?
+    TODO: We could use python -u or set PYTHONUNBUFFERED in the environment but
+          those are both settings made outside of this script and also requires
+          users to be explicit in how they call it. We need an elegant way that
+          does not impose on the user and always does the right thing.
+          Fix this once python2 is fully deprecated and we only have to support
+          python3 - we may be able to set the shebang to something like
+          #!/usr/local/bin/python3 -u
     '''
     if PY3:
         kwargs['flush'] = True
