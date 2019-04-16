@@ -48,16 +48,34 @@ deploy-production:
     - my-unguarded-deployment-task --to=production
 ```
 
-To hold jobs for a collisions on pattern matches in the ref/branch name.
+or to guard something like a `terraform` job running for tags.
+
+```yaml
+provision-infrastructure:
+  stage: provision
+  script:
+    - export PRIVATE_TOKEN="$GITLAB_API_TOKEN"
+    - gitlab-job-guard --guard-ref-regex='^v[0-9\.]+'  # Regex matches tags
+    - terraform plan  ...
+    - terraform apply ...
+  only:
+    - tags
+```
+
+### Other usages
+
+To hold jobs for a collisions on pattern matches on the ref/branch name.
 
 ```bash
-gitlab-job-guard -c=^master$                # Match branch names matching 'master' exactly.
+gitlab-job-guard -c=^master$                # Match branch names matching 'master' exactly
 
 gitlab-job-guard -c=^(master|dev(elop)?)$   # Match any of the mainline branches
 
+gitlab-job-guard -c=^(feature|release|hotfix)/  # Match any gitflow transient branch prefixes
+
 gitlab-job-guard -c=^[0-9]\-                # Match branch names beginning with a number
                                             # and dash ignoring all other text.
-                                            # e.g. a gitlab branch made from an issue.
+                                            # e.g. a gitlab branch made from an issue
 
 gitlab-job-guard -c=^v?[\d.]+$              # Match (semver) tags like v1.0.9, 2.0
 
@@ -71,6 +89,7 @@ gitlab-job-guard -c="$CI_BUILD_REF_NAME"    # Match current branch name (partial
 gitlab-job-guard -c="^$CI_BUILD_REF_NAME$"  # Match current branch name (exactly).
                                             # i.e. 'master' does not match 'master-deployment'
 
+gitlab-job-guard -c='.+' -s='running|pending'  # Match any pipeline in running or pending state
 ```
 
 To hold a job for a collision on part of the ref name (e.g. on branch prefix
