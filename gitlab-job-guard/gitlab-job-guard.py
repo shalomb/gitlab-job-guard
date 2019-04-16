@@ -2,7 +2,8 @@
 
 # -*- coding: utf-8 -*-
 
-# guard.py - guard pipeline jobs from multiple simultaneous executions
+# gitlab-job-guard
+# guard pipeline jobs from multiple simultaneous executions
 
 from __future__ import absolute_import, division, print_function
 
@@ -15,6 +16,7 @@ except ImportError:
   import simplejson as json
 import logging
 from os        import environ, path
+from os.path   import basename
 from posixpath import join as urljoin
 from random    import randint, random
 import re
@@ -87,7 +89,7 @@ def setup_logger(*args, **kwargs):
     '''
     Setup and return the root logger ojbect for the application
     '''
-    root = logging.getLogger(__file__)
+    root = logging.getLogger(basename(__file__))
     root.setLevel(logging.DEBUG)
 
     handler = logging.StreamHandler(sys.stdout)
@@ -103,6 +105,13 @@ def setup_logger(*args, **kwargs):
 def print_unbuffered(*args, **kwargs):
     '''
     Workaround for python3 where stderr is buffered. WTH python?
+    TODO: We could use python -u or set PYTHONUNBUFFERED in the environment but
+          those are both settings made outside of this script and also requires
+          users to be explicit in how they call it. We need an elegant way that
+          does not impose on the user and always does the right thing.
+          Fix this once python2 is fully deprecated and we only have to support
+          python3 - we may be able to set the shebang to something like
+          #!/usr/local/bin/python3 -u
     '''
     if PY3:
         kwargs['flush'] = True
@@ -261,7 +270,7 @@ def main():
             conflicts = [ p for p in runs if
                             re.search( args.guard_ref_regex,    p.ref    ) and
                             re.match(  args.guard_status_regex, p.status ) and
-                            p.id != args.ci_pipeline_id ]
+                            int(p.id) != int(args.ci_pipeline_id) ]
 
         except Exception as e:
             log.error('{}("{}")'.format(e.__class__.__name__, str(e)))

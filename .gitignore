@@ -49,4 +49,5 @@ tags
 # Python
 build/
 dist/
+venv/
 *.egg-info/
