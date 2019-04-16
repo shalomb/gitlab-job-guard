@@ -2,7 +2,8 @@
 
 # -*- coding: utf-8 -*-
 
-# guard.py - guard pipeline jobs from multiple simultaneous executions
+# gitlab-job-guard.py
+# guard pipeline jobs from multiple simultaneous executions
 
 from __future__ import absolute_import, division, print_function
 

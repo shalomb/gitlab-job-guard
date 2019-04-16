@@ -34,38 +34,41 @@ before_script:
   script:
     - python ./setup.py sdist bdist_wheel
     - pip install dist/gitlab-job-guard*.tar.gz
-    - python2 $(which guard.py) -c='feature/' -s 'running' -w 60;
+    - python2 $(which gitlab-job-guard.py) -c='feature/' -s 'running' -w 60;
 
 'test-py3':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - python3 $(which guard.py) -c='feature/' -s 'running' -w 60;
+    - python3 $(which gitlab-job-guard.py) -c='feature/' -s 'running' -w 60;
 
 'test-py3-exit-immediately':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='.+' -x; [ $? = 7 ] )
+    - ( set +e; gitlab-job-guard.py -c='.+' -s='.+' -x; [ $? = 7 ] )
 
 'test-py3-retry-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='.+' -w 60; [ $? = 11 ] )
+    - ( set +e; gitlab-job-guard.py -c='.+' -s='.+' -w 60; [ $? = 11 ] )
 
 'test-py3-retry-failed-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
-    - ( set +e; guard.py -c='.+' -s='failed|skipped' -w 60; [ $? = 11 ] )
+    - ( set +e;
+        gitlab-job-guard.py -c='.+' -s='failed|skipped' -w 60;
+        [ $? = 11 ]
+      )
 
 'test-py3-retry-feature-failed-until-timeout':
   stage: test
   image: python:3.7-slim-stretch
   script:
     - ( set +e;
-        guard.py -c='feature/' -s='failed|skipped' -w 60;
+        gitlab-job-guard.py -c='feature/' -s='failed|skipped' -w 60;
         [ $? = 11 ]
       )
 
@@ -75,7 +78,7 @@ before_script:
   script:
     - ( set +e;
         CI_API_V4_URL='https://gitlab.local/api/v4/'
-        guard.py -c='.+' -s='.+' -w 60;
+        gitlab-job-guard.py -c='.+' -s='.+' -w 60;
         [ $? = 11 ]
       )
 
@@ -85,7 +88,7 @@ before_script:
   script:
     - ( set +e;
         CI_API_V4_URL="$CI_API_V4_URL/blah-blah-blah"
-        guard.py -c='.+' -s='.+' -w 60;
+        gitlab-job-guard.py -c='.+' -s='.+' -w 60;
         [ $? = 11 ]
       )
 
@@ -95,7 +98,7 @@ before_script:
   script:
     - ( set +e;
         CI_PROJECT_ID='123123123'
-        guard.py -c='.+' -s='.+' -w 60;
+        gitlab-job-guard.py -c='.+' -s='.+' -w 60;
         [ $? = 11 ]
       )
 
@@ -105,7 +108,7 @@ before_script:
   script:
     - ( set +e;
         PRIVATE_TOKEN='abracadabra'
-        guard.py -c='.+' -s='.+' -w 60;
+        gitlab-job-guard.py -c='.+' -s='.+' -w 60;
         [ $? = 11 ]
       )
 
